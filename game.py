@@ -24,7 +24,20 @@ class Bird(pygame.sprite.Sprite):
         self.image=self.images[self.index]
         self.rect=self.image.get_rect()
         self.rect.center=[x,y]
+        self.vel=0
+        self.clicked=False
     def update(self):
+        self.vel=self.vel+0.01
+        if self.vel>8:
+            self.vel=8
+        if self.rect.bottom<650:
+            self.rect.y+=int(self.vel)
+        #detecting left click
+        if pygame.mouse.get_pressed()[0]==1 and self.clicked==False:
+            self.vel=-10
+            self.clicked=True
+        if pygame.mouse.get_pressed()[0]==0:
+            self.clicked==False
         self.counter=self.counter+1
         if self.counter>5:
             self.counter=0
