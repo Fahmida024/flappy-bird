@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import random
 pygame.init()
 clock=pygame.time.Clock()
 fps=60
@@ -8,6 +9,8 @@ pygame.display.set_caption('Flappy bird')
 ground_scroll=0
 scroll_speed=4
 playing=True
+pipefrequency=1500
+lastpipe=pygame.time.get_ticks()-pipefrequency
 
 bird1=pygame.image.load('bird1.png')
 bird2=pygame.image.load('bird2.png')
@@ -27,7 +30,7 @@ class Bird(pygame.sprite.Sprite):
         self.vel=0
         self.clicked=False
     def update(self):
-        self.vel=self.vel+0.01
+        self.vel=self.vel+0.5
         if self.vel>8:
             self.vel=8
         if self.rect.bottom<650:
@@ -37,7 +40,7 @@ class Bird(pygame.sprite.Sprite):
             self.vel=-10
             self.clicked=True
         if pygame.mouse.get_pressed()[0]==0:
-            self.clicked==False
+            self.clicked=False
         self.counter=self.counter+1
         if self.counter>5:
             self.counter=0
@@ -45,10 +48,28 @@ class Bird(pygame.sprite.Sprite):
             if self.index>2:
                 self.index=0
         self.image=self.images[self.index]
+        self.image=pygame.transform.rotate(self.images[self.index], self.vel*-2)
+
+class Pipe(pygame.sprite.Sprite):
+    def __init__(self,x,y,position):
+        pygame.sprite.Sprite.__init__(self)
+        self.image=pygame.image.load('pipe.png')
+        self.rect=self.image.get_rect()
+        if position==1:
+            self.image=pygame.transform.flip(self.image,False,True)
+            self.rect.bottomleft=[x,y-75]
+        if position==-1:
+            self.rect.topleft=[x,y+75]
+    def update(self):
+        self.rect.x-=scroll_speed
+        if self.rect.right<0:
+            self.kill()
+
 
 bird_group=pygame.sprite.Group()
 flappy=Bird(100,250)
 bird_group.add(flappy)
+pipe_group=pygame.sprite.Group()
 
 
 while playing:
@@ -58,11 +79,24 @@ while playing:
     clock.tick(fps)
     screen.blit(background,(0,0))
     bird_group.draw(screen)
+    pipe_group.draw(screen)
     bird_group.update()
     screen.blit(ground,(ground_scroll,650))
     ground_scroll=ground_scroll-4
     if abs(ground_scroll)>35:
         ground_scroll=0
+    time_now=pygame.time.get_ticks()
+    if time_now-lastpipe>pipefrequency:
+        pipe_height=random.randint(-100,100)
+        bottompipe=Pipe(800,350+pipe_height,-1)
+        toppipe=Pipe(800,350+pipe_height,1)
+        pipe_group.add(bottompipe)
+        pipe_group.add(toppipe)
+        lastpipe=time_now
+    pipe_group.update()
+    
+
+
         
     
     
